@@ -1,0 +1,510 @@
+/* CHAR-POP-PRO */
+
+/* ─── ST 테마 변수 상속 ─────────────────────────────────────
+   --SmartThemeBodyColor  : 테마 본문 색 (다크=밝음, 라이트=어둠)
+   --SmartThemeBlurTintColor : 배경 틴트
+   --SmartThemeBorderColor   : 테두리
+   --SmartThemeQuoteColor    : 강조색
+──────────────────────────────────────────────────────────── */
+#cpp-picker,
+#cpp-ctx {
+    --t:  var(--SmartThemeBodyColor, rgba(255,255,255,0.9));
+    --m:  color-mix(in srgb, var(--SmartThemeBodyColor, white) 50%, transparent);
+    --f:  color-mix(in srgb, var(--SmartThemeBodyColor, white) 28%, transparent);
+    --a:  var(--SmartThemeQuoteColor, #a0c4ff);
+    --b:  var(--SmartThemeBorderColor, rgba(255,255,255,0.12));
+    --s:  color-mix(in srgb, var(--SmartThemeBodyColor, white) 6%, transparent);
+    --sh: color-mix(in srgb, var(--SmartThemeBodyColor, white) 11%, transparent);
+}
+
+/* ── 플로팅 버튼 ─────────────────────────────────────────── */
+#cpp-avatar-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+    border: 1.5px solid var(--SmartThemeBorderColor, rgba(255,255,255,0.25));
+    box-shadow: 0 1px 5px rgba(0,0,0,0.35);
+    transition: transform 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 3px;
+    align-self: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+#cpp-avatar-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--SmartThemeQuoteColor, #a0c4ff);
+}
+#cpp-avatar-btn:active { transform: scale(0.9); }
+
+#cpp-avatar-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+/* ── 피커 컨테이너 ────────────────────────────────────────── */
+#cpp-picker {
+    position: fixed;
+    z-index: 99999;
+    /* 기본값: JS applyOpacity()가 실제 테마 배경색으로 즉시 덮어씀
+       여기서는 투명으로 두어 테마 색 튀는 현상 방지 */
+    background: transparent;
+    border: 1px solid var(--b, var(--SmartThemeBorderColor, rgba(255,255,255,0.12)));
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 -4px 28px rgba(0,0,0,0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    width: 280px;
+    box-sizing: border-box;
+}
+#cpp-picker.cpp-hidden { display: none; }
+#cpp-picker.cpp-visible {
+    display: block;
+    animation: cppIn 0.13s ease;
+}
+@keyframes cppIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── 헤더 ────────────────────────────────────────────────── */
+#cpp-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+#cpp-tabs {
+    display: flex;
+    flex: 1;
+    gap: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    min-width: 0;
+}
+#cpp-tabs::-webkit-scrollbar { display: none; }
+
+.cpp-tab {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--m);
+    font-size: 10px;
+    padding: 3px 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.12s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1.4;
+}
+.cpp-tab:hover {
+    background: var(--s);
+    color: var(--t);
+}
+.cpp-tab.cpp-tab-on {
+    background: color-mix(in srgb, var(--a, #a0c4ff) 15%, transparent);
+    border-color: color-mix(in srgb, var(--a, #a0c4ff) 50%, transparent);
+    color: var(--a);
+}
+
+#cpp-settings-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--f);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+    transition: all 0.12s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1.4;
+}
+#cpp-settings-btn:hover {
+    background: var(--s);
+    color: var(--t);
+}
+
+/* ── 설정 패널 (accordion) ───────────────────────────────── */
+#cpp-settings-panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.22s ease;
+    border-bottom: 0px solid var(--b, rgba(255,255,255,0.07));
+    margin-bottom: 0;
+}
+#cpp-settings-panel.cpp-open {
+    max-height: 360px;
+    border-bottom-width: 1px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+}
+
+.cpp-srow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.cpp-srow:first-child { margin-top: 8px; }
+
+.cpp-srow label {
+    font-size: 10px;
+    color: var(--f);
+    width: 44px;
+    flex-shrink: 0;
+}
+
+/* ── select 드롭다운 (ST 테마 색상) ─────────────────────── */
+#cpp-sort {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--s, rgba(255,255,255,0.06)) !important;
+    color: var(--t, rgba(255,255,255,0.8)) !important;
+    border: 1px solid var(--b, rgba(255,255,255,0.12));
+    border-radius: 5px;
+    font-size: 10px;
+    padding: 3px 5px;
+    cursor: pointer;
+}
+#cpp-sort option {
+    /* OS 네이티브 드롭다운 — 배경은 body 배경으로 */
+    background: var(--SmartThemeBlurTintColor, #121320);
+    color: var(--SmartThemeBodyColor, white);
+}
+
+/* ── 열 수 버튼 ──────────────────────────────────────────── */
+.cpp-col-group { display: flex; gap: 3px; }
+.cpp-col-btn {
+    background: var(--s);
+    border: 1px solid var(--b);
+    border-radius: 5px;
+    color: var(--m);
+    cursor: pointer;
+    font-size: 10px;
+    padding: 2px 8px;
+    transition: all 0.1s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.cpp-col-btn:hover { background: var(--sh); color: var(--t); }
+.cpp-col-btn.cpp-col-on {
+    background: color-mix(in srgb, var(--a, #a0c4ff) 15%, transparent);
+    border-color: color-mix(in srgb, var(--a, #a0c4ff) 50%, transparent);
+    color: var(--a);
+}
+
+/* ── 투명도 슬라이더 ─────────────────────────────────────── */
+.cpp-opacity-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
+#cpp-opacity {
+    flex: 1;
+    accent-color: var(--a, #a0c4ff);
+    cursor: pointer;
+}
+#cpp-opacity-val {
+    font-size: 9px;
+    color: var(--f);
+    width: 26px;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+/* ── 구분선 / 섹션 레이블 ────────────────────────────────── */
+.cpp-divider {
+    height: 1px;
+    background: var(--b, rgba(255,255,255,0.06));
+    margin: 6px 0;
+}
+.cpp-section-label {
+    font-size: 9px;
+    color: var(--f);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+}
+
+/* ── 폴더 관리 ────────────────────────────────────────────── */
+#cpp-folder-list {
+    max-height: 80px;
+    overflow-y: auto;
+    margin-bottom: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--m) transparent;
+}
+#cpp-folder-list::-webkit-scrollbar { width: 3px; }
+#cpp-folder-list::-webkit-scrollbar-thumb {
+    background: var(--m);
+    border-radius: 3px;
+}
+
+.cpp-no-folder {
+    font-size: 10px;
+    color: var(--f);
+    padding: 3px 0 5px;
+}
+.cpp-folder-row {
+    display: flex;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--b, white) 50%, transparent);
+    gap: 4px;
+}
+.cpp-folder-name {
+    flex: 1;
+    font-size: 10px;
+    color: var(--m);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cpp-folder-btns { display: flex; gap: 2px; flex-shrink: 0; }
+.cpp-f-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 1px 3px;
+    border-radius: 3px;
+    opacity: 0.5;
+    transition: opacity 0.12s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.cpp-f-btn:hover { opacity: 1; }
+
+#cpp-add-folder {
+    margin-top: 4px;
+    width: 100%;
+    background: var(--s);
+    border: 1px solid var(--b);
+    border-radius: 5px;
+    color: var(--m);
+    cursor: pointer;
+    font-size: 10px;
+    padding: 3px 8px;
+    transition: all 0.12s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+#cpp-add-folder:hover { background: var(--sh); color: var(--t); }
+
+/* ── 캐릭터 그리드 ────────────────────────────────────────── */
+#cpp-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+#cpp-grid[data-cols="3"] { grid-template-columns: repeat(3, 1fr) !important; }
+#cpp-grid[data-cols="4"] { grid-template-columns: repeat(4, 1fr) !important; }
+#cpp-grid[data-cols="5"] { grid-template-columns: repeat(5, 1fr) !important; }
+
+#cpp-grid::-webkit-scrollbar { width: 3px; }
+#cpp-grid::-webkit-scrollbar-track { background: transparent; }
+#cpp-grid::-webkit-scrollbar-thumb { background: var(--m); border-radius: 3px; }
+
+.cpp-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 3px;
+    cursor: pointer;
+    padding: 4px 2px;
+    border-radius: 8px;
+    transition: background 0.12s, transform 0.12s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+}
+.cpp-item:hover  { background: var(--s); transform: scale(1.05); }
+.cpp-item:active { transform: scale(0.93); }
+.cpp-item.cpp-active {
+    background: color-mix(in srgb, var(--a, #a0c4ff) 12%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--a, #a0c4ff) 55%, transparent);
+    outline-offset: -2px;
+}
+
+.cpp-star {
+    position: absolute;
+    top: 1px;
+    right: 2px;
+    font-size: 7px;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.cpp-item img {
+    width: 44px;
+    height: 44px;
+    max-width: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--b);
+    background: rgba(0,0,0,0.2);
+    display: block;
+    transition: border-color 0.12s;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+.cpp-item:hover img,
+.cpp-item.cpp-active img { border-color: var(--a); }
+
+.cpp-item span {
+    font-size: 9px;
+    color: var(--m);
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    display: block;
+}
+.cpp-item.cpp-active span { color: var(--a); }
+
+#cpp-grid[data-cols="5"] .cpp-item img { width: 36px; height: 36px; }
+
+.cpp-empty {
+    font-size: 11px;
+    color: var(--f);
+    padding: 18px 10px;
+    grid-column: 1 / -1;
+    text-align: center;
+}
+
+/* ── 컨텍스트 메뉴 ────────────────────────────────────────── */
+#cpp-ctx {
+    position: fixed;
+    z-index: 100000;
+    background: var(--SmartThemeBlurTintColor, rgba(20,21,36,0.98));
+    border: 1px solid var(--b, rgba(255,255,255,0.13));
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    min-width: 155px;
+    max-width: 200px;
+}
+#cpp-ctx.cpp-hidden { display: none; }
+
+.cpp-ctx-item {
+    font-size: 11px;
+    color: var(--t);
+    padding: 5px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.1s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cpp-ctx-item:hover { background: var(--s); }
+.cpp-ctx-danger { color: color-mix(in srgb, red 70%, var(--t, white) 30%); }
+.cpp-ctx-danger:hover { background: color-mix(in srgb, red 10%, transparent); }
+
+.cpp-ctx-sep { height: 1px; background: var(--b); margin: 3px 4px; }
+.cpp-ctx-label {
+    font-size: 9px;
+    color: var(--f);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px 2px;
+}
+.cpp-ctx-nofolder { font-size: 10px; color: var(--f); padding: 3px 9px 5px; }
+
+.cpp-ctx-fi {
+    font-size: 10px;
+    color: var(--m);
+    padding: 4px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.1s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cpp-ctx-fi:hover { background: var(--s); color: var(--t); }
+.cpp-ctx-fi.cpp-ctx-fi-on { color: var(--a); }
+
+/* ── 검색바 ──────────────────────────────────────────────── */
+#cpp-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--s);
+    border: 1px solid var(--b);
+    border-radius: 8px;
+    padding: 5px 8px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s;
+}
+#cpp-search-wrap:focus-within {
+    border-color: color-mix(in srgb, var(--a, #a0c4ff) 55%, transparent);
+}
+
+.cpp-search-icon {
+    font-size: 13px;
+    color: var(--f);
+    flex-shrink: 0;
+    pointer-events: none;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+#cpp-search {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--t);
+    font-size: 11px;
+    padding: 0;
+    min-width: 0;
+    line-height: 1.4;
+}
+#cpp-search::placeholder { color: var(--f); }
+
+#cpp-search-clear {
+    background: none;
+    border: none;
+    color: var(--m);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.1s;
+}
+#cpp-search-clear:hover { color: var(--t); }
+#cpp-search-clear.cpp-hidden { display: none; }
